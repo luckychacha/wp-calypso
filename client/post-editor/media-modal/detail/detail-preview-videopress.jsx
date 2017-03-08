@@ -45,6 +45,8 @@ class EditorMediaModalDetailPreviewVideoPress extends Component {
 	componentWillReceiveProps( nextProps ) {
 		if ( this.props.isPlaying && ! nextProps.isPlaying ) {
 			this.pause();
+		} else if ( ! this.props.isPlaying && nextProps.isPlaying ) {
+			this.play();
 		}
 	}
 
@@ -120,6 +122,16 @@ class EditorMediaModalDetailPreviewVideoPress extends Component {
 		// Remove DOM created outside of React.
 		while ( this.video.firstChild ) {
 			this.video.removeChild( this.video.firstChild );
+		}
+	}
+
+	play() {
+		if ( ! this.player || ! this.player.state ) {
+			return;
+		}
+
+		if ( typeof this.player.state.play === 'function' ) {
+			this.player.state.play();
 		}
 	}
 
