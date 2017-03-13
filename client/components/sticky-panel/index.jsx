@@ -1,57 +1,65 @@
 /**
  * External dependencies
  */
-var ReactDom = require( 'react-dom' ),
-	React = require( 'react' ),
-	throttle = require( 'lodash/throttle' ),
-	classNames = require( 'classnames' );
+import React, { Component, PropTypes } from 'react';
+import ReactDom from 'react-dom';
+import throttle from 'lodash/throttle';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
  */
-var viewport = require( 'lib/viewport' );
+import viewport from 'lib/viewport';
 
-module.exports = React.createClass( {
-	displayName: 'StickyPanel',
+class StickyPanel extends Component {
+	static propTypes = {
+		className: PropTypes.string,
+	};
 
-	getInitialState: function() {
-		return {
-			isSticky: false,
-			spacerHeight: 0,
-			blockWidth: 0
-		};
-	},
+	state = {
+		isSticky: false,
+		spacerHeight: 0,
+		blockWidth: 0,
+	};
 
-	componentDidMount: function() {
-		// Determine and cache vertical threshold from rendered element's
-		// offset relative the document
-		this.threshold = ReactDom.findDOMNode( this ).offsetTop;
+	constructor() {
+		super( ...arguments );
+
+		// bound
+		this.onWindowResize = this.onWindowResize.bind( this );
+		this.onWindowScroll = this.onWindowScroll.bind( this );
+		this.updateIsSticky = this.updateIsSticky.bind( this );
+
+		// window events
 		this.throttleOnResize = throttle( this.onWindowResize, 200 );
-
 		window.addEventListener( 'scroll', this.onWindowScroll );
 		window.addEventListener( 'resize', this.throttleOnResize );
-		this.updateIsSticky();
-	},
+	}
 
-	componentWillUnmount: function() {
+	componentDidMount() {
+		this.threshold = ReactDom.findDOMNode( this ).offsetTop;
+		this.updateIsSticky();
+	}
+
+	componentWillUnmount() {
 		window.removeEventListener( 'scroll', this.onWindowScroll );
 		window.removeEventListener( 'resize', this.throttleOnResize );
 		window.cancelAnimationFrame( this.rafHandle );
-	},
+	}
 
-	onWindowScroll: function() {
+	onWindowScroll() {
 		this.rafHandle = window.requestAnimationFrame( this.updateIsSticky );
-	},
+	}
 
-	onWindowResize: function() {
+	onWindowResize() {
 		this.setState( {
 			spacerHeight: this.state.isSticky ? ReactDom.findDOMNode( this ).clientHeight : 0,
 			blockWidth: this.state.isSticky ? ReactDom.findDOMNode( this ).clientWidth : 0
 		} );
-	},
+	}
 
-	updateIsSticky: function() {
-		var isSticky = window.pageYOffset > this.threshold;
+	updateIsSticky() {
+		const isSticky = window.pageYOffset > this.threshold;
 
 		if ( viewport.isMobile() ) {
 			return this.setState( { isSticky: false } );
@@ -61,30 +69,30 @@ module.exports = React.createClass( {
 			this.setState( {
 				isSticky: isSticky,
 				spacerHeight: isSticky ? ReactDom.findDOMNode( this ).clientHeight : 0,
-				blockWidth: isSticky ? ReactDom.findDOMNode( this ).clientWidth : 0
+				blockWidth: isSticky ? ReactDom.findDOMNode( this ).clientWidth : 0,
 			} );
 		}
-	},
+	}
 
-	getBlockStyle: function() {
-		var offset;
-
+	getBlockStyle() {
 		if ( this.state.isSticky ) {
 			// Offset to account for Master Bar by finding body visual top
 			// relative the current scroll position
-			offset = document.getElementById( 'header' ).getBoundingClientRect().height;
+			const offset = document.getElementById( 'header' ).getBoundingClientRect().height;
 
 			return {
 				top: offset,
-				width: this.state.blockWidth
+				width: this.state.blockWidth,
 			};
 		}
-	},
+	}
 
-	render: function() {
-		var classes = classNames( 'sticky-panel', this.props.className, {
-			'is-sticky': this.state.isSticky
-		} );
+	render() {
+		const classes = classNames(
+			'sticky-panel',
+			this.props.className,
+			{ 'is-sticky': this.state.isSticky }
+		);
 
 		return (
 			<div className={ classes }>
@@ -95,4 +103,7 @@ module.exports = React.createClass( {
 			</div>
 		);
 	}
-} );
+}
+
+export default StickyPanel;
+
