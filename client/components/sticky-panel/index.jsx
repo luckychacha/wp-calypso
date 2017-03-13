@@ -42,17 +42,16 @@ class StickyPanel extends Component {
 	}
 
 	componentDidMount() {
-		const domElement = ReactDom.findDOMNode( this );
+		this.domElement = ReactDom.findDOMNode( this );
+		this.dimms = this.domElement.getBoundingClientRect();
 		this.threshold = 0;
 
-		if ( domElement ) {
-			this.threshold += domElement.getBoundingClientRect().top;
-		}
+		this.threshold += this.dimms.top;
 
 		// verify if the Header masterbar is into DOMTree
 		if ( this.props.checkForHeadermasterbar ) {
 			const headerElement = document.getElementById( 'header' );
-			this.threshold -= headerElement.getBoundingClientRect().height;
+			this.threshold -= headerElement ? headerElement.getBoundingClientRect().height : 0;
 		}
 
 		this.updateIsSticky();
@@ -65,13 +64,15 @@ class StickyPanel extends Component {
 	}
 
 	onWindowScroll() {
+		this.dimms = this.domElement.getBoundingClientRect();
 		this.rafHandle = window.requestAnimationFrame( this.updateIsSticky );
 	}
 
 	onWindowResize() {
+		this.dimms = this.domElement.getBoundingClientRect();
 		this.setState( {
-			spacerHeight: this.state.isSticky ? ReactDom.findDOMNode( this ).clientHeight : 0,
-			blockWidth: this.state.isSticky ? ReactDom.findDOMNode( this ).clientWidth : 0
+			spacerHeight: this.state.isSticky ? this.dimms.height : 0,
+			blockWidth: this.state.isSticky ? this.dimms.width : 0
 		} );
 	}
 
@@ -85,8 +86,8 @@ class StickyPanel extends Component {
 		if ( isSticky !== this.state.isSticky ) {
 			this.setState( {
 				isSticky: isSticky,
-				spacerHeight: isSticky ? ReactDom.findDOMNode( this ).clientHeight : 0,
-				blockWidth: isSticky ? ReactDom.findDOMNode( this ).clientWidth : 0,
+				spacerHeight: isSticky ? this.dimms.height : 0,
+				blockWidth: isSticky ? this.dimms.width : 0,
 			} );
 		}
 	}
