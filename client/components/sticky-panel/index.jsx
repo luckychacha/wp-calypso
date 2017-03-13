@@ -13,8 +13,13 @@ import viewport from 'lib/viewport';
 
 class StickyPanel extends Component {
 	static propTypes = {
+		checkForHeadermasterbar: PropTypes.bool,
 		className: PropTypes.string,
 	};
+
+	static defaultProps = {
+		checkForHeadermasterbar: true,
+	}
 
 	state = {
 		isSticky: false,
@@ -37,7 +42,19 @@ class StickyPanel extends Component {
 	}
 
 	componentDidMount() {
-		this.threshold = ReactDom.findDOMNode( this ).offsetTop;
+		const domElement = ReactDom.findDOMNode( this );
+		this.threshold = 0;
+
+		if ( domElement ) {
+			this.threshold += domElement.getBoundingClientRect().top;
+		}
+
+		// verify if the Header masterbar is into DOMTree
+		if ( this.props.checkForHeadermasterbar ) {
+			const headerElement = document.getElementById( 'header' );
+			this.threshold -= headerElement.getBoundingClientRect().height;
+		}
+
 		this.updateIsSticky();
 	}
 
